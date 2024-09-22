@@ -1,0 +1,22 @@
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+Build/
+
+# 忽略用户特定的设置
+*.sln
+*.suo
+*.sdf
+*.VC.db
+*.opensdf
+*.opendb
+*.xcodeproj
+*.xcworkspace
+
+
+
+# 忽略插件和其他不必要的文件
+.vscode/
+.vs/
+
