@@ -4,10 +4,77 @@
 #include "AuraPlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Interaction/EnemyInterface.h"
+
 AAuraPlayerController::AAuraPlayerController()
 {
 	bReplicates = true;//在多人游戏中，复制指响应服务器上数据更新并将其发送到客户端。
 }
+
+void AAuraPlayerController::PlayerTick(float DeltaTime)
+{
+	Super::PlayerTick(DeltaTime);
+	CursorTrace();
+}
+
+void AAuraPlayerController::CursorTrace()
+{
+	FHitResult CursorHit;//创建一个 FHitResult 变量 CursorHit，用于存储碰撞检测的结果。
+	GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
+	//调用 GetHitResultUnderCursor 函数，进行光标下的碰撞检测。参数 ECC_Visibility 表示使用可见性通道进行检测；
+	//第二个参数 false 表示不需要进行复杂的遮挡检测；结果将存储在 CursorHit 中。
+	if(!CursorHit.bBlockingHit) return;
+	//检查 CursorHit 的 bBlockingHit 属性，如果为 false（即光标下没有发生碰撞），则直接返回，结束函数执行。
+	//这意味着后续的逻辑只有在光标下有物体被检测到时才会执行。
+	LastActor = ThisActor;//在头文件中创建了这两个指针，分别代表上一个指针指着的目标和这次的目标。
+	ThisActor = Cast<IEnemyInterface>(CursorHit.GetActor());//将这次点击的结果储存到这次目标的指针中。
+	/**
+	 * 检测这个指针，有多种情况
+	 *  A. LastActor为null，ThisActor为valid
+	 *     -啥也不做
+	 *  B. LastActor为null，ThisActor为valid
+	 *     -高亮ThisActor
+	 *  C. LastActor为valid，ThisActor为null
+	 *     -取消高亮LastActor
+	 *  D. 都为valid，但LastActor ！= ThisActor
+	 *     -取消高亮LastActor，高亮ThisActor
+	 *  E. 都为valid，且Last Actor = ThisActor
+	 *     -啥也不做
+	 */
+
+	if(LastActor == nullptr)
+	{
+		if(ThisActor != nullptr)
+		{
+			//Case B
+			ThisActor->HighlightAction();
+		}
+		else
+		{
+			//Case A，啥也不做。
+		}
+	}
+	else  //LastActor is valid
+	{
+		if(ThisActor == nullptr)//Case C
+		{
+			LastActor->UnHighlightAction();
+		}
+		else//Case D
+		{
+		    if(LastActor != ThisActor)
+		    {
+			    LastActor->UnHighlightAction();
+		    	ThisActor->HighlightAction();
+		    }
+		    else
+		    {
+			    //Case E 啥也不做
+		    }
+		}
+	}
+	
+} 
 
 void AAuraPlayerController::BeginPlay()
 {
@@ -54,4 +121,6 @@ void AAuraPlayerController::Move(const struct FInputActionValue& InputActionValu
 		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
 	}
 
-} 
+}
+
+
