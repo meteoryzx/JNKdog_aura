@@ -15,8 +15,13 @@ class AURA_API AAuraEnemy : public AAuraCharacterBase,public IEnemyInterface//�
 {                                                                           //如果不重写这里的纯虚函数，则抽象类无法实例化
 	GENERATED_BODY()
 public:
+	AAuraEnemy();
+
+	/* Enemy Interface */
 	virtual void HighlightAction () override;//重写函数
 	virtual void UnHighlightAction () override;
-	UPROPERTY(BlueprintReadOnly)
-	bool bHighlighted = false;
+	/* End Enemy Interface */
+
+protected:
+	virtual void BeginPlay() override;
 };
